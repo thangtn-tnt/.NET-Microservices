@@ -13,8 +13,8 @@ namespace PlatformService.Profiles
         public PlatformProfile()
         {
             // Source -> Target
-            CreateMap<Platform, PlatformReadDto>();
-            CreateMap<PlatformCreateDto, Platform>();
+            CreateMap<Platform, PlatformResponseDto>();
+            CreateMap<PlatformRequestDto, Platform>();
         }
 
     }
