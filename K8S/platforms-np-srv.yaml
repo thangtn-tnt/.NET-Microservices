@@ -1,0 +1,15 @@
+# https://kubernetes.io/docs/concepts/services-networking/service/
+apiVersion: v1
+kind: Service
+metadata:
+  name: platformservice-srv
+  namespace: default
+spec:
+  selector:
+    app: platformservice
+  type: NodePort
+  ports:
+  - name: platformservice
+    protocol: TCP
+    port: 80
+    targetPort: 80    
