@@ -1,3 +1,4 @@
+using System.Net.NetworkInformation;
 using System;
 using System.Reflection.Metadata;
 using System.Collections.Generic;
@@ -7,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using PlatformService.DTOs;
 using PlatformService.Services;
 using PlatformService.Models;
+using PlatformService.SyncDataServices.Http;
 
 namespace PlatformService.Controllers
 {
@@ -16,11 +18,15 @@ namespace PlatformService.Controllers
     {
         private readonly IPlatformService _service;
         private readonly IMapper _mapper;
+        private readonly ICommandDataClient _commandClient;
 
-        public PlatformsController(IPlatformService service, IMapper mapper)
+        public PlatformsController(IPlatformService service,
+        IMapper mapper,
+        ICommandDataClient commandClient)
         {
             _service = service;
             _mapper = mapper;
+            _commandClient = commandClient;
         }
 
         [HttpGet]
@@ -49,15 +55,23 @@ namespace PlatformService.Controllers
         }
 
         [HttpPost]
-        public ActionResult<PlatformRequestDto> CreatePlatform(PlatformRequestDto platformRequestDto)
+        public async Task<ActionResult<PlatformRequestDto>> CreatePlatformAsync(PlatformRequestDto platformRequestDto)
         {
             var platform = _mapper.Map<Platform>(platformRequestDto);
-
-            Console.WriteLine("Creating platform " + platform.Name);
+            
             _service.CreatePlatform(platform);
             _service.SaveChange();
 
             var platformResponseDto = _mapper.Map<PlatformResponseDto>(platform);
+
+            try
+            {
+                await _commandClient.SendPlatformToCommand(platformResponseDto);
+            }
+            catch (System.Exception ex)
+            {
+                Console.WriteLine($"Could not send sync: {ex.Message}");
+            }
 
             return CreatedAtRoute(nameof(GetPlatformById), new { Id = platformResponseDto.Id }, platformResponseDto);
         }
