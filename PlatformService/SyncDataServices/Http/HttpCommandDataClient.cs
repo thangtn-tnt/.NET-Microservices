@@ -29,7 +29,7 @@ namespace PlatformService.SyncDataServices.Http
 
             Console.WriteLine(_configuration["CommandService"]);
 
-            var response = await _client.PostAsync($"{_configuration["CommandService"]}/api/c/Platforms", content);
+            var response = await _client.PostAsync(_configuration["CommandService"], content);
 
             if (response.IsSuccessStatusCode)
             {
